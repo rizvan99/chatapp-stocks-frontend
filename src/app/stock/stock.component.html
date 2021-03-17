@@ -1,0 +1,14 @@
+<div>
+  <h6 *ngFor="let stock of stocks"
+      [class.selected]="stock === selectedStock"
+      (click)="onSelect(stock)">
+    {{stock.name}}
+  </h6>
+</div>
+
+<div *ngIf="selectedStock">
+  <h6>Selected stock: {{selectedStock.name}}</h6>
+  <h6>Description: {{selectedStock.description}}</h6>
+  <h6>Value: {{selectedStock.value}}</h6>
+</div>
+

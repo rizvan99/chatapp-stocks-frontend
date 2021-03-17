@@ -1,0 +1,72 @@
+<div *ngIf="!socketId">
+  You are not connected!
+</div>
+<div *ngIf="!chatClient" class="row justify-content-center" style="padding-top: 50px">
+  <div class="card">
+    <div class="card-body">
+      <div class="input-group mb-3">
+        <input type="text" [formControl]="nicknameFc" class="form-control" placeholder="Type your nickname"
+               aria-label="Nickname" aria-describedby="basic-addon2" size="50px">
+      </div>
+      <div class="row justify-content-end">
+        <div *ngIf="errors$ | async as error" style="color: red">
+          {{error}}
+        </div>
+        <button (click)="sendNickname()" class="btn btn-primary" style="margin-right: 15px">Enter nickname</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div *ngIf="chatClient">
+  <div class="row vh-100" style="padding-top: 30px; padding-bottom: 30px">
+    <div class="col-4">
+      <div class="card h-100">
+        <div class="card-header">
+          <h4 style="text-align: center">User List</h4>
+        </div>
+        <div class="card-body">
+          <div *ngIf="clients$ | async as clients">
+            <ul>
+              <li *ngFor="let client of clients">
+                {{client.nickname}}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-8">
+      <div class="card h-100">
+        <div class="card-header">
+          <h4>Hello {{chatClient.nickname}} - {{socketId}}</h4>
+        </div>
+        <div class="card-body">
+          <h6 *ngFor="let message of messages">
+            <b>{{message.sender?.nickname}}:</b> {{message.message}}
+          </h6>
+        </div>
+        <div class="card-footer">
+          <div class="input-group flex-fill">
+            <input type="text" class="form-control" placeholder="Write message ..." [formControl]="messageFc">
+            <button type="button" class="btn btn-primary" (click)="sendMessage()">Send</button>
+          </div>
+          <div style="height: 15px">
+            <i *ngIf="clientIsTyping.length > 0" style="color: darkslategrey">
+              Clients typing:
+              <span *ngFor="let clients of clientIsTyping; let i = index">
+                {{clients.nickname}}
+                <span *ngIf="clientIsTyping.length - 1 > i">,</span>
+            </span>
+            </i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+
+
