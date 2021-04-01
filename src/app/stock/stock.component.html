@@ -1,14 +1,40 @@
-<div>
-  <h6 *ngFor="let stock of stocks"
-      [class.selected]="stock === selectedStock"
-      (click)="onSelect(stock)">
-    {{stock.name}}
-  </h6>
+<a routerLink="/create">Create stock</a>
+
+<div class="row" style="padding-top: 30px">
+  <div class="col-3">
+    <div class="card" style="height: 300px">
+      <div class="card-header">
+        <h6 style="text-align: center">Stocks</h6>
+      </div>
+      <div class="card-body">
+        <div *ngIf="stocks$ | async as stocks">
+          <ul>
+            <li *ngFor="let stock of stocks"
+                [class.selected]="stock === selectedStock"
+                (click)="onSelect(stock)">
+              {{stock.name}}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6">
+    <div class="card" style="height: 300px" *ngIf="selectedStock">
+      <div class="card-header">
+        <h6 style="text-align: center">{{selectedStock.name}}</h6>
+      </div>
+      <div class="card-body">
+        <h6><b>Description</b><br> {{selectedStock.description}}</h6><br>
+        <h6><b>Value</b><br> {{selectedStock.value}}</h6>
+      </div>
+      <div class="card-footer">
+        <h6>Change Value: <input type="number" [formControl]="updateStockValue"></h6>
+        <button class="btn btn-primary" (click)="updateStock()">Update value</button>
+        <button class="btn btn-danger" (click)="deleteStock()">Delete stock</button>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div *ngIf="selectedStock">
-  <h6>Selected stock: {{selectedStock.name}}</h6>
-  <h6>Description: {{selectedStock.description}}</h6>
-  <h6>Value: {{selectedStock.value}}</h6>
-</div>
 

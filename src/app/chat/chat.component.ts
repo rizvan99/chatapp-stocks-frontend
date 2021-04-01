@@ -30,15 +30,6 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.clients$ = this.chatService.listenForClients();
     this.errors$ = this.chatService.listenForErrors();
 
-    // Needs to be reworked
-    this.chatService.getAllMessages()
-      .pipe(
-        takeUntil(this.unsubscribe$)
-      )
-      .subscribe(msg => {
-        this.messages = msg;
-      });
-
     // Listen when someone starts typing
     this.messageFc.valueChanges
       .pipe(
@@ -75,15 +66,27 @@ export class ChatComponent implements OnInit, OnDestroy {
       )
       .subscribe(welcome => {
         this.messages = welcome.messages;
+
         this.chatClient = this.chatService.chatClient = welcome.client;
       });
 
     if (this.chatService.chatClient) {
       this.chatService.sendNickname(this.chatService.chatClient.nickname);
     }
-
-
-
+    this.chatService.listenForConnect()
+      .pipe(
+        takeUntil(this.unsubscribe$)
+      )
+      .subscribe( (id) => {
+        this.socketId = id;
+      });
+    this.chatService.listenForDisconnect()
+      .pipe(
+        takeUntil(this.unsubscribe$)
+      )
+      .subscribe( (id) => {
+        this.socketId = id;
+      });
   }
 
   ngOnDestroy(): void {

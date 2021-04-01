@@ -58,7 +58,7 @@ export class ChatService {
             return this.socket.ioSocket.id;
           }
         )
-      );;
+      );
   }
 
   listenForDisconnect(): Observable<string> {
