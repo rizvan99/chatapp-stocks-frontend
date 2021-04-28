@@ -1,7 +1,7 @@
 <div *ngIf="!socketId">
   You are not connected!
 </div>
-<div *ngIf="!chatClient" class="row justify-content-center" style="padding-top: 50px">
+<div *ngIf="!(chatClient$ | async) as chatClient" class="row justify-content-center" style="padding-top: 50px">
   <div class="card">
     <div class="card-body">
       <div class="input-group mb-3">
@@ -19,7 +19,7 @@
 </div>
 
 
-<div *ngIf="chatClient">
+<div *ngIf="chatClient$ | async as chatClient">
   <div class="row vh-100" style="padding-top: 30px; padding-bottom: 30px">
     <div class="col-4">
       <div class="card h-100">
@@ -40,7 +40,7 @@
     <div class="col-8">
       <div class="card h-100">
         <div class="card-header">
-          <h4>Hello {{chatClient.nickname}} - {{socketId}}</h4>
+          <h4>Hello {{chatClient.nickname}} - {{chatClient.id}}</h4>
         </div>
         <div class="card-body">
           <h6 *ngFor="let message of messages">

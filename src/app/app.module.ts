@@ -5,6 +5,9 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import {Socket, SocketIoConfig, SocketIoModule} from 'ngx-socket-io';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import {environment} from '../environments/environment';
+import {NgxsModule} from '@ngxs/store';
+import {ChatState} from './chat/state/chat.state';
 
 // const config: SocketIoConfig = { url: 'http://localhost:3000', options: {} };
 
@@ -33,7 +36,10 @@ export class SocketTwo extends Socket {
     BrowserModule,
     AppRoutingModule,
     SocketIoModule,
-    NgbModule
+    NgbModule,
+    NgxsModule.forRoot([ChatState], {
+      developmentMode: !environment.production
+    })
   ],
   providers: [SocketOne, SocketTwo],
   bootstrap: [AppComponent]

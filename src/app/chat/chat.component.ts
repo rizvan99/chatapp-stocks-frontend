@@ -5,6 +5,11 @@ import {Observable, Subject, Subscription} from 'rxjs';
 import {debounceTime, take, takeUntil} from 'rxjs/operators';
 import {ChatClient} from './shared/chat-client.model';
 import {ChatMessage} from './shared/chat-message.model';
+import {JoinChatDto} from './shared/join-chat.dto';
+import {StorageService} from '../shared/storage.service';
+import {ChatState} from './state/chat.state';
+import {Select, Store} from '@ngxs/store';
+import {ChatClientLoggedIn, ListenForClients, LoadClientFromStorage, StopListeningForClients} from './state/chat.action';
 
 @Component({
   selector: 'app-chat',
@@ -12,23 +17,31 @@ import {ChatMessage} from './shared/chat-message.model';
   styleUrls: ['./chat.component.scss']
 })
 export class ChatComponent implements OnInit, OnDestroy {
+
+  @Select(ChatState.clients) clients$: Observable<ChatClient[]> | undefined;
+  @Select(ChatState.clientIds) clientsIds$: Observable<string[]> | undefined;
+  @Select(ChatState.loggedInClient) chatClient$: Observable<ChatClient> | undefined;
+
   messageFc = new FormControl('');
   nicknameFc = new FormControl('');
 
   messages: ChatMessage[] = [];
   unsubscribe$ = new Subject();
-  clients$: Observable<ChatClient[]>;
   errors$: Observable<string>;
-  chatClient: ChatClient;
+  // chatClient: ChatClient;
   clientIsTyping: ChatClient[] = [];
   socketId: string;
 
-  constructor(private chatService: ChatService) { }
+  constructor(private chatService: ChatService,
+              private storageService: StorageService,
+              private store: Store) { }
 
   ngOnInit(): void {
 
-    this.clients$ = this.chatService.listenForClients();
+    // this.clients$ = this.chatService.listenForClients();
     this.errors$ = this.chatService.listenForErrors();
+    this.store.dispatch(new ListenForClients());
+
 
     // Listen when someone starts typing
     this.messageFc.valueChanges
@@ -66,13 +79,22 @@ export class ChatComponent implements OnInit, OnDestroy {
       )
       .subscribe(welcome => {
         this.messages = welcome.messages;
-
-        this.chatClient = this.chatService.chatClient = welcome.client;
+        // this.chatClient = this.chatService.chatClient = welcome.client;
+        this.store.dispatch(new ChatClientLoggedIn(welcome.client));
+        this.storageService.saveChatClient(welcome.client);
       });
 
-    if (this.chatService.chatClient) {
-      this.chatService.sendNickname(this.chatService.chatClient.nickname);
-    }
+    this.store.dispatch(new LoadClientFromStorage());
+
+
+    /*const oldClient = this.storageService.loadChatClient();
+    if (oldClient) {
+      this.chatService.joinChat({
+        id: oldClient.id,
+        nickname: oldClient.nickname
+      });
+    }*/
+
     this.chatService.listenForConnect()
       .pipe(
         takeUntil(this.unsubscribe$)
@@ -92,18 +114,25 @@ export class ChatComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
+    this.store.dispatch(new StopListeningForClients());
   }
 
   sendMessage(): void {
-    this.chatService.sendMessage(this.messageFc.value);
+    // const clientLoggedIn = this.storageService.loadChatClient();
+    const client = this.store.selectSnapshot(ChatState.loggedInClient);
+    const newMessage: ChatMessage = {
+      message: this.messageFc.value,
+      sender: client
+    };
+    this.chatService.sendMessage(newMessage);
     this.messageFc.setValue('');
   }
 
   sendNickname(): void {
     if (this.nicknameFc.value)
     {
-      this.chatService.sendNickname(this.nicknameFc.value);
+      const dto: JoinChatDto = {nickname: this.nicknameFc.value};
+      this.chatService.joinChat(dto);
     }
-
   }
 }

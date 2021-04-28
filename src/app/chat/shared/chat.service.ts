@@ -7,6 +7,7 @@ import {ChatMessage} from './chat-message.model';
 import {WelcomeDto} from './welcome.dto';
 import {SocketOne} from '../../app.module';
 import {map} from 'rxjs/operators';
+import {JoinChatDto} from './join-chat.dto';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +18,7 @@ export class ChatService {
 
   constructor(private socket: SocketOne) { }
 
-  sendMessage(msg: string): void {
+  sendMessage(msg: ChatMessage): void {
     this.socket.emit('message', msg);
   }
 
@@ -25,8 +26,8 @@ export class ChatService {
     this.socket.emit('typing', b);
   }
 
-  sendNickname(nickname: string): void {
-    this.socket.emit('nickname', nickname);
+  joinChat(dto: JoinChatDto): void {
+    this.socket.emit('joinChat', dto);
   }
 
   listenForMessages(): Observable<ChatMessage> {
@@ -76,11 +77,6 @@ export class ChatService {
   listenForErrors(): Observable<string> {
     return this.socket
       .fromEvent<string>('error');
-  }
-
-  getAllMessages(): Observable<ChatMessage[]> {
-    return this.socket
-      .fromEvent<ChatMessage[]>('allMessages');
   }
 
   disconnect(): void {
